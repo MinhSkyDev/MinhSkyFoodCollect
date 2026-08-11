@@ -11,10 +11,10 @@ class ApiBridge:
     """
     def __init__(self, service: FoodRecapService):
         self.service = service
-        self.window = None  # Sẽ được set khi khởi tạo webview window
+        self._window = None  # Dùng private attribute (_window) để PyWebView JS reflection bỏ qua không quét COM object native
 
     def set_window(self, window):
-        self.window = window
+        self._window = window
 
     def get_places(self) -> List[Dict[str, Any]]:
         return self.service.repository.get_all()
@@ -90,7 +90,7 @@ class ApiBridge:
         """
         Mở hộp thoại chọn file native (Excel, TXT, CSV) của hệ điều hành.
         """
-        if not self.window:
+        if not self._window:
             return {"success": False, "error": "Chưa khởi tạo cửa sổ ứng dụng"}
 
         file_types = (
@@ -100,7 +100,7 @@ class ApiBridge:
             'File CSV (*.csv)'
         )
         
-        result = self.window.create_file_dialog(
+        result = self._window.create_file_dialog(
             webview.OPEN_DIALOG,
             allow_multiple=False,
             file_types=file_types
@@ -116,11 +116,11 @@ class ApiBridge:
         """
         Mở hộp thoại Save File để xuất danh sách ra file Excel.
         """
-        if not self.window:
+        if not self._window:
             return {"success": False, "error": "Chưa khởi tạo cửa sổ ứng dụng"}
 
         file_types = ('File Excel (*.xlsx)',)
-        result = self.window.create_file_dialog(
+        result = self._window.create_file_dialog(
             webview.SAVE_DIALOG,
             save_filename='food_recap_export.xlsx',
             file_types=file_types
