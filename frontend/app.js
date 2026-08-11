@@ -33,20 +33,41 @@ const randomResultBox = document.getElementById('randomResultBox');
 const viewGridBtn = document.getElementById('viewGridBtn');
 const viewTableBtn = document.getElementById('viewTableBtn');
 
-// Callback nhận dữ liệu nạp tức thì từ Python (0ms delay khi vừa mở app)
-window.onInitialDataLoaded = function(places) {
+// Callback nạp ngầm dữ liệu từ Python Backend (Async Push)
+window.onBackendDataReady = function(places) {
     if (Array.isArray(places) && places.length > 0) {
         appState.places = places;
+        try {
+            localStorage.setItem('munch_cached_places', JSON.stringify(places));
+        } catch (e) {}
         updateUI();
-        hideLoading();
+        showToast(`Đã đồng bộ ${places.length} quán ăn mới nhất!`, "info");
     }
+};
+
+window.onInitialDataLoaded = function(places) {
+    window.onBackendDataReady(places);
 };
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     
-    // Nạp dữ liệu nhanh nhất có thể
+    // 0ms INSTANT RENDER: Nạp ngay từ localStorage đệm nếu có
+    try {
+        const cached = localStorage.getItem('munch_cached_places');
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                appState.places = parsed;
+                updateUI();
+            }
+        }
+    } catch (e) {
+        console.warn("Lỗi đọc cache local:", e);
+    }
+
+    // Nạp dữ liệu mới nhất từ Python Backend ngầm
     if (window.pywebview && window.pywebview.api) {
         loadPlaces();
     } else {
@@ -198,11 +219,23 @@ function setupEventListeners() {
                 gridColsToggle.querySelectorAll('.density-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                collectionContainer.classList.remove('cols-2', 'cols-3', 'cols-4');
+                collectionContainer.classList.remove('cols-1', 'cols-2', 'cols-3', 'cols-4');
                 collectionContainer.classList.add(`cols-${cols}`);
+                renderCollection();
             });
         });
     }
+
+    // Debounced Window Resize Handler (Fix Bug 1 UI Resize Break)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        cancelAnimationFrame(resizeTimer);
+        resizeTimer = requestAnimationFrame(() => {
+            if (appState.viewMode === 'grid') {
+                renderCollection();
+            }
+        });
+    });
 
     // View Toggle Buttons
     viewGridBtn.addEventListener('click', () => {
@@ -338,6 +371,7 @@ function renderCollection() {
 
 function renderGridView(places) {
     const defaultImg = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+    const isCols1 = collectionContainer.classList.contains('cols-1');
 
     collectionContainer.innerHTML = places.map(p => {
         const dishes = Array.isArray(p.recommended_dishes) ? p.recommended_dishes : [];
@@ -347,8 +381,25 @@ function renderGridView(places) {
         const imgUrl = p.image_url || defaultImg;
         const vibe = p.vibe ? `<span class="price-tag" style="background-color: rgba(139, 92, 246, 0.15); color: var(--accent-purple);"><i class="fa-solid fa-sparkles"></i> ${escapeHtml(p.vibe)}</span>` : '';
 
+        // Tự động tạo bộ sưu tập 4 ảnh ẩm thực cuộn ngang khi ở chế độ 1 Cột
+        let photoGalleryHtml = '';
+        if (isCols1) {
+            const extraImgs = [
+                imgUrl,
+                "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80"
+            ];
+            const itemsHtml = extraImgs.map((src, i) => `
+                <img src="${src}" alt="${escapeHtml(p.name)} Photo ${i+1}" class="card-photo-item" loading="lazy" decoding="async" onerror="this.src='${defaultImg}'" />
+            `).join('');
+            
+            photoGalleryHtml = `<div class="card-photo-gallery">${itemsHtml}</div>`;
+        }
+
         return `
             <div class="food-card" data-id="${p.id}">
+                ${isCols1 ? photoGalleryHtml : `
                 <div class="card-banner">
                     <img src="${imgUrl}" alt="${escapeHtml(p.name)}" class="card-banner-img" loading="lazy" decoding="async" onerror="this.src='${defaultImg}'" />
                     <div class="card-overlay"></div>
@@ -356,7 +407,7 @@ function renderGridView(places) {
                         <span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span>
                         <span class="rating-tag" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.8rem; color: var(--accent-amber); font-weight: 700;">${rating}</span>
                     </div>
-                </div>
+                </div>`}
 
                 <div class="card-body">
                     <div class="card-header">
@@ -364,6 +415,7 @@ function renderGridView(places) {
                             <h4 class="place-name">${escapeHtml(p.name || 'Quán ăn')}</h4>
                             <span class="place-address"><i class="fa-solid fa-location-dot" style="color: var(--accent-emerald);"></i> ${escapeHtml(p.address || 'Đang cập nhật')}</span>
                         </div>
+                        ${isCols1 ? `<span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span>` : ''}
                     </div>
 
                     <div class="dishes-box">

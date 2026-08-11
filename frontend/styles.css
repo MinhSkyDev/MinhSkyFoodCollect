@@ -492,27 +492,31 @@ body {
     gap: 18px;
     align-content: start;
     scroll-behavior: smooth;
-    /* Tối ưu render scroll phần cứng */
-    will-change: transform;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.collection-container.cols-1 {
+    grid-template-columns: 1fr;
 }
 
 .collection-container.cols-2 {
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
 }
 
 .collection-container.cols-3 {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
 }
 
 .collection-container.cols-4 {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
 .collection-container.table-mode {
     display: block;
 }
 
-/* Food Card - 60 FPS Smooth Rendering Optimization */
+/* Food Card - 60 FPS Smooth Rendering Optimization & Flexible Layout */
 .food-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -521,13 +525,56 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     
-    /* Thuộc tính CSS hiện đại giúp trình duyệt bỏ qua render card ngoài màn hình (Không bị giật lag) */
-    contain: content;
+    /* Sử dụng contain: layout style để vừa tăng tốc render vừa linh hoạt co giãn theo Window Resize */
+    contain: layout style;
     content-visibility: auto;
     contain-intrinsic-size: 320px 420px;
     transform: translateZ(0);
+}
+
+/* Horizontal Photo Gallery cho Chế độ 1 Cột */
+.card-photo-gallery {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 12px;
+    background-color: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-color);
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-amber) transparent;
+}
+
+.card-photo-gallery::-webkit-scrollbar {
+    height: 6px;
+}
+
+.card-photo-gallery::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-full);
+}
+
+.card-photo-gallery::-webkit-scrollbar-thumb {
+    background: var(--accent-amber);
+    border-radius: var(--radius-full);
+}
+
+.card-photo-item {
+    flex: 0 0 280px;
+    height: 180px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    scroll-snap-align: start;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+
+.card-photo-item:hover {
+    transform: scale(1.02);
 }
 
 .food-card:hover {
