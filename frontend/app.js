@@ -189,6 +189,21 @@ function setupEventListeners() {
         renderCollection();
     });
 
+    // Grid Density Toggle Buttons
+    const gridColsToggle = document.getElementById('gridColsToggle');
+    if (gridColsToggle) {
+        gridColsToggle.querySelectorAll('.density-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cols = e.target.dataset.cols;
+                gridColsToggle.querySelectorAll('.density-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                collectionContainer.classList.remove('cols-2', 'cols-3', 'cols-4');
+                collectionContainer.classList.add(`cols-${cols}`);
+            });
+        });
+    }
+
     // View Toggle Buttons
     viewGridBtn.addEventListener('click', () => {
         appState.viewMode = 'grid';
@@ -322,45 +337,59 @@ function renderCollection() {
 }
 
 function renderGridView(places) {
+    const defaultImg = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+
     collectionContainer.innerHTML = places.map(p => {
         const dishes = Array.isArray(p.recommended_dishes) ? p.recommended_dishes : [];
-        const dishesHtml = dishes.map(d => `<span class="dish-tag">${d}</span>`).join('');
+        const dishesHtml = dishes.map(d => `<span class="dish-tag">${escapeHtml(d)}</span>`).join('');
         const mapUrl = p.original_url || p.expanded_url || '#';
         const rating = p.rating_ai ? `⭐ ${p.rating_ai}` : '⭐ 4.5';
+        const imgUrl = p.image_url || defaultImg;
+        const vibe = p.vibe ? `<span class="price-tag" style="background-color: rgba(139, 92, 246, 0.15); color: var(--accent-purple);"><i class="fa-solid fa-sparkles"></i> ${escapeHtml(p.vibe)}</span>` : '';
 
         return `
             <div class="food-card" data-id="${p.id}">
-                <div class="card-header">
-                    <div>
-                        <h4 class="place-name">${escapeHtml(p.name || 'Quán ăn')}</h4>
-                        <span class="place-address"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.address || 'Đang cập nhật')}</span>
+                <div class="card-banner">
+                    <img src="${imgUrl}" alt="${escapeHtml(p.name)}" class="card-banner-img" loading="lazy" decoding="async" onerror="this.src='${defaultImg}'" />
+                    <div class="card-overlay"></div>
+                    <div class="card-banner-badges">
+                        <span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span>
+                        <span class="rating-tag" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.8rem; color: var(--accent-amber); font-weight: 700;">${rating}</span>
                     </div>
-                    <span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span>
                 </div>
 
-                <div class="dishes-box">
-                    <span class="dishes-title">Món nên thử</span>
-                    <div class="dishes-tags">${dishesHtml || '<span class="dish-tag">Món đặc sản</span>'}</div>
-                </div>
+                <div class="card-body">
+                    <div class="card-header">
+                        <div>
+                            <h4 class="place-name">${escapeHtml(p.name || 'Quán ăn')}</h4>
+                            <span class="place-address"><i class="fa-solid fa-location-dot" style="color: var(--accent-emerald);"></i> ${escapeHtml(p.address || 'Đang cập nhật')}</span>
+                        </div>
+                    </div>
 
-                <div class="card-details">
-                    <span class="price-tag"><i class="fa-solid fa-wallet"></i> ${escapeHtml(p.price_range || 'Bình dân')}</span>
-                    <span class="rating-tag">${rating}</span>
-                </div>
+                    <div class="dishes-box">
+                        <span class="dishes-title"><i class="fa-solid fa-utensils"></i> Món nên thử</span>
+                        <div class="dishes-tags">${dishesHtml || '<span class="dish-tag">Món đặc sản</span>'}</div>
+                    </div>
 
-                ${p.summary ? `<p class="summary-quote">"${escapeHtml(p.summary)}"</p>` : ''}
+                    <div class="card-details">
+                        <span class="price-tag"><i class="fa-solid fa-wallet"></i> ${escapeHtml(p.price_range || 'Bình dân')}</span>
+                        ${vibe}
+                    </div>
 
-                <div class="card-footer">
-                    <a href="${mapUrl}" target="_blank" class="map-link">
-                        <i class="fa-solid fa-map-location-dot"></i> Mở Google Maps
-                    </a>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-icon-delete" onclick="reanalyzePlace('${p.id}')" title="Phân tích lại quán này với AI">
-                            <i class="fa-solid fa-arrows-rotate" style="color: var(--accent-amber);"></i>
-                        </button>
-                        <button class="btn-icon-delete" onclick="deletePlace('${p.id}')" title="Xóa quán này">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    ${p.summary ? `<p class="summary-quote">"${escapeHtml(p.summary)}"</p>` : ''}
+
+                    <div class="card-footer" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <a href="${mapUrl}" target="_blank" class="map-link">
+                            <i class="fa-solid fa-map-location-dot"></i> Google Maps
+                        </a>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-icon-delete" onclick="reanalyzePlace('${p.id}')" title="Phân tích lại quán này với AI">
+                                <i class="fa-solid fa-arrows-rotate" style="color: var(--accent-amber);"></i>
+                            </button>
+                            <button class="btn-icon-delete" onclick="deletePlace('${p.id}')" title="Xóa quán này">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

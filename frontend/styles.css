@@ -455,24 +455,29 @@ body {
     border-color: var(--accent-amber);
 }
 
-.view-toggle {
+/* Grid Density Selector */
+.grid-cols-toggle {
     display: flex;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 2px;
+    align-items: center;
+    gap: 2px;
+    margin-right: 6px;
+    border-right: 1px solid var(--border-color);
+    padding-right: 6px;
 }
 
-.toggle-btn {
-    padding: 6px 12px;
+.density-btn {
+    padding: 4px 8px;
     background: transparent;
     border: none;
     color: var(--text-muted);
-    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
     cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-.toggle-btn.active {
+.density-btn:hover, .density-btn.active {
     background-color: var(--bg-hover);
     color: var(--accent-amber);
 }
@@ -486,28 +491,97 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 18px;
     align-content: start;
+    scroll-behavior: smooth;
+    /* Tối ưu render scroll phần cứng */
+    will-change: transform;
+}
+
+.collection-container.cols-2 {
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+}
+
+.collection-container.cols-3 {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.collection-container.cols-4 {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
 .collection-container.table-mode {
     display: block;
 }
 
+/* Food Card - 60 FPS Smooth Rendering Optimization */
 .food-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 18px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 12px;
     position: relative;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    
+    /* Thuộc tính CSS hiện đại giúp trình duyệt bỏ qua render card ngoài màn hình (Không bị giật lag) */
+    contain: content;
+    content-visibility: auto;
+    contain-intrinsic-size: 320px 420px;
+    transform: translateZ(0);
 }
 
 .food-card:hover {
     border-color: var(--accent-amber);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* Card Banner Image */
+.card-banner {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    background-color: var(--bg-sidebar);
+}
+
+.card-banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.food-card:hover .card-banner-img {
+    transform: scale(1.04);
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(28, 31, 38, 0.95) 100%);
+}
+
+.card-banner-badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+}
+
+.card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
 }
 
 .card-header {

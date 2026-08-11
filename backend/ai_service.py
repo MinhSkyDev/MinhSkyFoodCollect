@@ -2,7 +2,7 @@ import json
 import re
 from typing import Dict, Any, Optional
 from backend.config import Config
-from backend.parsers import expand_google_maps_url
+from backend.parsers import expand_google_maps_url, get_food_image_by_category
 
 # Thử import google-genai mới hoặc google-generativeai cũ
 GENAI_SDK_AVAILABLE = False
@@ -89,6 +89,9 @@ class GeminiAIService:
                 if parsed_json:
                     parsed_json["original_url"] = raw_url
                     parsed_json["expanded_url"] = expanded_url
+                    cat = parsed_json.get("category", "Ẩm thực")
+                    name = parsed_json.get("name", "")
+                    parsed_json["image_url"] = get_food_image_by_category(cat, name)
                     return parsed_json
 
             except Exception as e:
@@ -131,6 +134,7 @@ class GeminiAIService:
         import urllib.parse
         extracted_name = "Quán ăn Google Maps"
         extracted_address = "Đang cập nhật qua Google Maps"
+        category = "Ẩm thực"
 
         try:
             unquoted = urllib.parse.unquote(expanded_url)
@@ -155,10 +159,12 @@ class GeminiAIService:
         except Exception as e:
             print(f"[Fallback URL extraction error]: {e}")
 
+        image_url = get_food_image_by_category(category, extracted_name)
+
         return {
             "name": extracted_name,
             "address": extracted_address,
-            "category": "Ẩm thực",
+            "category": category,
             "recommended_dishes": ["Đặc sản quán"],
             "price_range": "Bình dân",
             "vibe": "Thoáng mát",
@@ -166,5 +172,6 @@ class GeminiAIService:
             "rating_ai": 4.5,
             "highlights": ["Google Maps Link"],
             "original_url": raw_url,
-            "expanded_url": expanded_url
+            "expanded_url": expanded_url,
+            "image_url": image_url
         }

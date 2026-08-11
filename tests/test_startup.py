@@ -53,6 +53,20 @@ class TestStartup(unittest.TestCase):
         self.assertTrue(styles_css.exists(), "Thiếu file frontend/styles.css")
         self.assertTrue(app_js.exists(), "Thiếu file frontend/app.js")
 
+    def test_image_url_and_startup(self):
+        """
+        Kiểm tra trường image_url của các quán ăn và đảm bảo dữ liệu sẵn sàng cho 0ms startup
+        """
+        from backend.repository import JSONFileRepository
+        repo = JSONFileRepository()
+        places = repo.get_all()
+        
+        self.assertGreater(len(places), 0, "Cơ sở dữ liệu places.json không được rỗng")
+        for p in places:
+            self.assertIn("id", p)
+            self.assertIn("name", p)
+            self.assertIn("image_url", p, f"Quán {p.get('name')} thiếu thuộc tính image_url")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -43,6 +43,37 @@ def expand_google_maps_url(url: str, timeout: float = 5.0) -> str:
     return url
 
 
+# Bộ sưu tập ảnh ẩm thực chất lượng cao theo từng danh mục
+FOOD_IMAGE_GALLERY = {
+    "phở": "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80",
+    "bún": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    "mì": "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=800&q=80",
+    "nhật": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80",
+    "sushi": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80",
+    "cà phê": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80",
+    "nhậu": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+    "lẩu": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    "nướng": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+    "cơm": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+    "bánh": "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80",
+    "xôi": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+    "ốc": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80",
+    "pizza": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"
+}
+DEFAULT_FOOD_IMAGE = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+
+
+def get_food_image_by_category(category: str, name: str = "") -> str:
+    """
+    Trả về URL ảnh món ăn chất lượng cao dựa trên danh mục hoặc tên quán.
+    """
+    text = (category + " " + name).lower()
+    for key, img_url in FOOD_IMAGE_GALLERY.items():
+        if key in text:
+            return img_url
+    return DEFAULT_FOOD_IMAGE
+
+
 def extract_urls_from_text(text: str) -> List[str]:
     """
     Rút trích tất cả các đường link Google Maps từ văn bản thô (Notepad++, copy-paste).
