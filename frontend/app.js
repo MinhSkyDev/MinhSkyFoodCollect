@@ -411,11 +411,11 @@ function renderGridView(places) {
 
                 <div class="card-body">
                     <div class="card-header">
-                        <div>
+                        <div style="flex: 1;">
                             <h4 class="place-name">${escapeHtml(p.name || 'Quán ăn')}</h4>
                             <span class="place-address"><i class="fa-solid fa-location-dot" style="color: var(--accent-emerald);"></i> ${escapeHtml(p.address || 'Đang cập nhật')}</span>
                         </div>
-                        ${isCols1 ? `<span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span>` : ''}
+                        ${isCols1 ? `<div style="display: flex; gap: 8px; align-items: center;"><span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span><span class="rating-tag" style="background: var(--bg-hover); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.85rem; color: var(--accent-amber); font-weight: 700;">${rating}</span></div>` : ''}
                     </div>
 
                     <div class="dishes-box">
