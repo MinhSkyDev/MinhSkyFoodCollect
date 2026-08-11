@@ -377,24 +377,35 @@ function renderGridView(places) {
         const dishes = Array.isArray(p.recommended_dishes) ? p.recommended_dishes : [];
         const dishesHtml = dishes.map(d => `<span class="dish-tag">${escapeHtml(d)}</span>`).join('');
         const mapUrl = p.original_url || p.expanded_url || '#';
-        const rating = p.rating_ai ? `⭐ ${p.rating_ai}` : '⭐ 4.5';
+        const ratingVal = p.rating_ai || p.rating || 4.5;
+        const reviewCountStr = p.review_count ? ` (${escapeHtml(p.review_count)})` : '';
+        const rating = `⭐ ${ratingVal}${reviewCountStr}`;
         const imgUrl = p.image_url || defaultImg;
         const vibe = p.vibe ? `<span class="price-tag" style="background-color: rgba(139, 92, 246, 0.15); color: var(--accent-purple);"><i class="fa-solid fa-sparkles"></i> ${escapeHtml(p.vibe)}</span>` : '';
 
-        // Tự động tạo bộ sưu tập 4 ảnh ẩm thực cuộn ngang khi ở chế độ 1 Cột
+        // Tạo danh sách ảnh thực tế từ Google Maps
         let photoGalleryHtml = '';
+        const galleryList = Array.isArray(p.photo_gallery) && p.photo_gallery.length > 0 ? p.photo_gallery : [imgUrl];
         if (isCols1) {
-            const extraImgs = [
-                imgUrl,
-                "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
-                "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
-                "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80"
-            ];
-            const itemsHtml = extraImgs.map((src, i) => `
+            const itemsHtml = galleryList.map((src, i) => `
                 <img src="${src}" alt="${escapeHtml(p.name)} Photo ${i+1}" class="card-photo-item" loading="lazy" decoding="async" onerror="this.src='${defaultImg}'" />
             `).join('');
-            
             photoGalleryHtml = `<div class="card-photo-gallery">${itemsHtml}</div>`;
+        }
+
+        // Tạo khối hiển thị Đánh giá tiêu biểu (Top Comments)
+        let topCommentsHtml = '';
+        if (Array.isArray(p.top_comments) && p.top_comments.length > 0) {
+            const firstComment = p.top_comments[0];
+            topCommentsHtml = `
+                <div class="top-comment-box" style="margin-top: 6px; padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-amber); font-size: 0.8rem; color: var(--text-secondary);">
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-main); margin-bottom: 2px;">
+                        <span><i class="fa-solid fa-circle-user" style="color: var(--accent-amber);"></i> ${escapeHtml(firstComment.author || 'Thực khách')}</span>
+                        <span style="color: var(--accent-amber);">⭐ ${firstComment.rating || 5}/5</span>
+                    </div>
+                    <p style="margin: 0; font-style: italic;">"${escapeHtml(firstComment.comment)}"</p>
+                </div>
+            `;
         }
 
         return `
@@ -405,7 +416,7 @@ function renderGridView(places) {
                     <div class="card-overlay"></div>
                     <div class="card-banner-badges">
                         <span class="place-category">${escapeHtml(p.category || 'Ẩm thực')}</span>
-                        <span class="rating-tag" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.8rem; color: var(--accent-amber); font-weight: 700;">${rating}</span>
+                        <span class="rating-tag" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.78rem; color: var(--accent-amber); font-weight: 700;">${rating}</span>
                     </div>
                 </div>`}
 
@@ -429,6 +440,7 @@ function renderGridView(places) {
                     </div>
 
                     ${p.summary ? `<p class="summary-quote">"${escapeHtml(p.summary)}"</p>` : ''}
+                    ${topCommentsHtml}
 
                     <div class="card-footer" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
                         <a href="${mapUrl}" target="_blank" class="map-link">

@@ -13,6 +13,7 @@ else:
 
 class Config:
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+    PLACES_API_KEY = os.getenv("PLACES_API_KEY", GEMINI_API_KEY).strip()
     PORT = int(os.getenv("PORT", 3000))
     HOST = os.getenv("HOST", "localhost")
     DATA_DIR = BASE_DIR / "data"

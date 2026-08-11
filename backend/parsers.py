@@ -1,6 +1,6 @@
 import re
 import requests
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import urllib.parse
 
 # Regex nhận diện các định dạng Google Maps Link phổ biến
@@ -33,13 +33,62 @@ def expand_google_maps_url(url: str, timeout: float = 5.0) -> str:
                 timeout=timeout,
                 headers=headers
             )
-            # Unquote URL unicode (%E3%82%86...) thành chữ đọc được (dạng: ゆうじょう 4 Đ. Số 11...)
             expanded = urllib.parse.unquote(response.url)
             response.close()
             return expanded
         except Exception:
             return url
     return url
+
+
+def extract_google_cdn_photos(html_text: str, max_photos: int = 5) -> List[str]:
+    """
+    Trích xuất các đường link ảnh CDN thực tế (lh3..lh6.googleusercontent.com/p/...) 
+    nằm trong mã JS payload của Google Maps HTML.
+    """
+    if not html_text:
+        return []
+    
+    # Regex tìm link ảnh CDN của Google Maps Place Photo
+    photo_pattern = re.compile(r'https://lh[3-6]\.googleusercontent\.com/p/[A-Za-z0-9_-]+=s\d+-w\d+-h\d+|https://lh[3-6]\.googleusercontent\.com/p/[A-Za-z0-9_-]+')
+    matches = photo_pattern.findall(html_text)
+    
+    unique_photos = []
+    seen = set()
+    for m in matches:
+        # Chuẩn hóa kích thước ảnh chất lượng cao 800px
+        base_url = m.split('=')[0]
+        full_res_url = f"{base_url}=w800-h600-k-no"
+        if base_url not in seen:
+            seen.add(base_url)
+            unique_photos.append(full_res_url)
+            if len(unique_photos) >= max_photos:
+                break
+                
+    return unique_photos
+
+
+def fetch_google_maps_html_and_photos(url: str, timeout: float = 5.0) -> Dict[str, Any]:
+    """
+    Tải HTML trang Google Maps và bóc tách ảnh thực tế từ CDN Google.
+    """
+    expanded_url = expand_google_maps_url(url, timeout=timeout)
+    photos = []
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7"
+        }
+        res = requests.get(expanded_url, headers=headers, timeout=timeout)
+        if res.status_code == 200:
+            photos = extract_google_cdn_photos(res.text)
+    except Exception as e:
+        print(f"[Notice Fetch Google Maps Photos]: {e}")
+        
+    return {
+        "expanded_url": expanded_url,
+        "photos": photos
+    }
 
 
 # Bộ sưu tập ảnh ẩm thực chất lượng cao theo từng danh mục
