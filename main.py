@@ -43,32 +43,20 @@ def start_local_server(port):
 
 
 def main():
-    print("=" * 60)
-    print("[MUNCH RECAP] Khởi chạy Google Maps Food Recap App")
-    print("=" * 60)
+    # 1. Đường dẫn file HTML giao diện trực tiếp trên ổ đĩa (0ms load)
+    index_path = str(BASE_DIR / "frontend" / "index.html")
 
-    # 1. Nạp Repository tức thì (1ms)
+    # 2. Khởi tạo đối tượng API Bridge nhẹ nhất có thể trong < 1ms
     repository = JSONFileRepository()
-    print(f"[*] Data Storage: JSON Repository ({Config.DATA_FILE})")
-
-    # 2. Khởi tạo Service & API Bridge nhẹ nhất có thể để mở UI trong < 50ms
     ai_service = GeminiAIService()
     service = FoodRecapService(repository=repository, ai_service=ai_service)
     api_bridge = ApiBridge(service=service)
 
-    # 3. Khởi chạy Local HTTP Server trên Thread ngầm ngay lập tức
-    port = find_free_port(Config.PORT)
-    server_thread = threading.Thread(target=start_local_server, args=(port,), daemon=True)
-    server_thread.start()
-    
-    app_url = f"http://localhost:{port}/index.html"
-    print(f"[*] Local Web Server: Running at {app_url}")
-
-    # 4. Hiển thị cửa sổ Desktop GUI TỨC THÌ (< 50ms Startup)
+    # 3. MỞ CỬA SỔ ỨNG DỤNG TỨC THÌ (0ms) KHÔNG CHỜ SOCKET HAY HTTP SERVER
     try:
         window = webview.create_window(
             title="Munch Aggregator - Google Maps Food Recap (AI Powered)",
-            url=app_url,
+            url=index_path,
             js_api=api_bridge,
             width=1280,
             height=820,
@@ -77,24 +65,42 @@ def main():
         )
         api_bridge.set_window(window)
 
-        # Nạp ngầm dữ liệu ngay khi cửa sổ được khởi tạo
-        def async_init_and_push():
+        # 4. Khởi chạy Server HTTP & Đồng bộ dữ liệu ngầm KHI CỬA SỔ ĐÃ MỞ (Background Task)
+        def async_bg_init():
+            print("=" * 60)
+            print("[MUNCH RECAP] Cửa sổ giao diện Desktop đã mở TỨC THÌ (0ms)!")
+            print("=" * 60)
+            print(f"[*] Data Storage: JSON Repository ({Config.DATA_FILE})")
+
+            # Khởi chạy HTTP Server ngầm
+            try:
+                port = find_free_port(Config.PORT)
+                server_thread = threading.Thread(target=start_local_server, args=(port,), daemon=True)
+                server_thread.start()
+                print(f"[*] Local Web Server: Running at http://localhost:{port}/index.html")
+            except Exception as e:
+                print(f"[Notice HTTP Server]: {e}")
+
+            # Đẩy dữ liệu mới nhất ngầm cho UI
             try:
                 places = repository.get_all()
                 places_json = json.dumps(places, ensure_ascii=False)
-                # Bắn dữ liệu cập nhật ngầm cho giao diện
                 window.evaluate_js(f"if (typeof window.onBackendDataReady === 'function') window.onBackendDataReady({places_json});")
             except Exception as e:
                 print(f"[Async Push Error]: {e}")
 
-        # Chạy nạp ngầm background thread
-        threading.Thread(target=async_init_and_push, daemon=True).start()
-
+        # Đăng ký sự kiện nạp ngầm khi UI xuất hiện
+        window.events.shown += lambda: threading.Thread(target=async_bg_init, daemon=True).start()
+        
         print("[*] Đang hiển thị cửa sổ giao diện ứng dụng TỨC THÌ...")
         webview.start(debug=False)
 
     except Exception as e:
         print(f"[Notice PyWebView GUI]: Không thể mở cửa sổ Desktop GUI native ({e}).")
+        port = find_free_port(Config.PORT)
+        server_thread = threading.Thread(target=start_local_server, args=(port,), daemon=True)
+        server_thread.start()
+        app_url = f"http://localhost:{port}/index.html"
         print(f"[*] Đang tự động mở ứng dụng trên Trình Duyệt Web mặc định: {app_url}")
         webbrowser.open(app_url)
         try:
