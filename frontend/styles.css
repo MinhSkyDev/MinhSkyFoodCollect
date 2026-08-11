@@ -490,6 +490,7 @@ body {
     padding: 16px 24px 24px 24px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: max-content; /* Ép trình duyệt tính toán mỗi hàng theo ĐÚNG 100% chiều cao tự nhiên của Card */
     gap: 18px;
     align-content: start;
     scroll-behavior: smooth;
@@ -532,8 +533,7 @@ body {
     flex-direction: column;
     position: relative;
     width: 100%;
-    height: 100%;
-    min-height: fit-content;
+    height: auto; /* Chiều cao giãn 100% tự do theo nội dung bên trong, triệt tiêu 100% hiện tượng chồng đè */
     box-sizing: border-box;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
