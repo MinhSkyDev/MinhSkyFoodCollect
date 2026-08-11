@@ -1,8 +1,7 @@
 import re
 import requests
 from typing import List, Optional
-import pandas as pd
-
+import urllib.parse
 
 # Regex nhận diện các định dạng Google Maps Link phổ biến
 GOOGLE_MAPS_REGEX = re.compile(
@@ -114,6 +113,7 @@ def parse_excel_file(file_path: str) -> List[str]:
     Đọc file Excel (.xlsx, .xls) hoặc CSV.
     Tự động kiểm tra tất cả các cột và ô để trích xuất các đường link Google Maps.
     """
+    import pandas as pd
     urls = []
     seen = set()
 

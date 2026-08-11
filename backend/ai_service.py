@@ -4,22 +4,30 @@ from typing import Dict, Any, Optional
 from backend.config import Config
 from backend.parsers import expand_google_maps_url, get_food_image_by_category
 
-# Thử import google-genai mới hoặc google-generativeai cũ
-GENAI_SDK_AVAILABLE = False
+GENAI_SDK_AVAILABLE = None
 GENAI_MODE = None
+genai = None
+genai_legacy = None
 
-try:
-    from google import genai
-    from google.genai import types
-    GENAI_SDK_AVAILABLE = True
-    GENAI_MODE = "new"
-except ImportError:
+
+def _init_genai_sdk():
+    global GENAI_SDK_AVAILABLE, GENAI_MODE, genai, genai_legacy
+    if GENAI_SDK_AVAILABLE is not None:
+        return
+    
     try:
-        import google.generativeai as genai_legacy
+        from google import genai as _genai
+        genai = _genai
         GENAI_SDK_AVAILABLE = True
-        GENAI_MODE = "legacy"
+        GENAI_MODE = "new"
     except ImportError:
-        GENAI_SDK_AVAILABLE = False
+        try:
+            import google.generativeai as _genai_legacy
+            genai_legacy = _genai_legacy
+            GENAI_SDK_AVAILABLE = True
+            GENAI_MODE = "legacy"
+        except ImportError:
+            GENAI_SDK_AVAILABLE = False
 
 
 class GeminiAIService:
@@ -37,6 +45,7 @@ class GeminiAIService:
         """
         Phân tích đường link Google Maps và trả về dữ liệu quán ăn dạng JSON chuẩn.
         """
+        _init_genai_sdk()
         expanded_url = expand_google_maps_url(raw_url)
         
         # Nếu chưa có API key hoặc SDK chưa sẵn sàng, trả về thông tin giả lập/fallback mượt mà

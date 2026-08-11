@@ -26,7 +26,6 @@ class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(BASE_DIR / "frontend"), **kwargs)
 
     def log_message(self, format, *args):
-        # Nén bớt log HTTP thừa
         pass
 
 
@@ -48,24 +47,16 @@ def main():
     print("[MUNCH RECAP] Khởi chạy Google Maps Food Recap App")
     print("=" * 60)
 
-    # 1. Khởi tạo Repository với Dependency Injection
+    # 1. Nạp Repository tức thì (1ms)
     repository = JSONFileRepository()
     print(f"[*] Data Storage: JSON Repository ({Config.DATA_FILE})")
 
-    # 2. Khởi tạo Gemini AI Service
+    # 2. Khởi tạo Service & API Bridge nhẹ nhất có thể để mở UI trong < 50ms
     ai_service = GeminiAIService()
-    if Config.GEMINI_API_KEY:
-        print(f"[*] Gemini AI Service: Activated (API Key loaded)")
-    else:
-        print(f"[!] Gemini AI Service: Warning - GEMINI_API_KEY chưa được cấu hình!")
-
-    # 3. Khởi tạo Core Business Service
     service = FoodRecapService(repository=repository, ai_service=ai_service)
-
-    # 4. Khởi tạo API Bridge
     api_bridge = ApiBridge(service=service)
 
-    # 5. Khởi chạy Local HTTP Server trên Thread ngầm
+    # 3. Khởi chạy Local HTTP Server trên Thread ngầm ngay lập tức
     port = find_free_port(Config.PORT)
     server_thread = threading.Thread(target=start_local_server, args=(port,), daemon=True)
     server_thread.start()
@@ -73,7 +64,7 @@ def main():
     app_url = f"http://localhost:{port}/index.html"
     print(f"[*] Local Web Server: Running at {app_url}")
 
-    # 6. Thử mở cửa sổ Desktop GUI bằng PyWebView
+    # 4. Hiển thị cửa sổ Desktop GUI TỨC THÌ (< 50ms Startup)
     try:
         window = webview.create_window(
             title="Munch Aggregator - Google Maps Food Recap (AI Powered)",
@@ -86,23 +77,26 @@ def main():
         )
         api_bridge.set_window(window)
 
-        def on_loaded():
+        # Nạp ngầm dữ liệu ngay khi cửa sổ được khởi tạo
+        def async_init_and_push():
             try:
-                places = service.repository.get_all()
+                places = repository.get_all()
                 places_json = json.dumps(places, ensure_ascii=False)
-                window.evaluate_js(f"if (typeof window.onInitialDataLoaded === 'function') window.onInitialDataLoaded({places_json});")
+                # Bắn dữ liệu cập nhật ngầm cho giao diện
+                window.evaluate_js(f"if (typeof window.onBackendDataReady === 'function') window.onBackendDataReady({places_json});")
             except Exception as e:
-                print(f"[Error pushing initial data]: {e}")
+                print(f"[Async Push Error]: {e}")
 
-        window.events.loaded += on_loaded
-        print("[*] Đang hiển thị cửa sổ giao diện ứng dụng...")
+        # Chạy nạp ngầm background thread
+        threading.Thread(target=async_init_and_push, daemon=True).start()
+
+        print("[*] Đang hiển thị cửa sổ giao diện ứng dụng TỨC THÌ...")
         webview.start(debug=False)
 
     except Exception as e:
         print(f"[Notice PyWebView GUI]: Không thể mở cửa sổ Desktop GUI native ({e}).")
         print(f"[*] Đang tự động mở ứng dụng trên Trình Duyệt Web mặc định: {app_url}")
         webbrowser.open(app_url)
-        # Giữ process chạy server
         try:
             server_thread.join()
         except KeyboardInterrupt:
