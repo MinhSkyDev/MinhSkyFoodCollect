@@ -54,12 +54,20 @@ def main():
     parser.add_argument("--file", "-f", type=str, help="Đường dẫn file .txt hoặc .xlsx chứa link Maps cần phân tích")
     parser.add_argument("--links", "-l", type=str, help="Chuỗi văn bản chứa 1 hoặc nhiều link Google Maps")
     parser.add_argument("--sync-only", "-s", action="store_true", help="Chỉ đồng bộ data/places.json sang frontend/places.json")
+    parser.add_argument("--update-photos", "-p", action="store_true", help="Tự động bóc tách và cập nhật album ảnh thực tế từ Google Maps cho tất cả quán")
     
     args = parser.parse_args()
 
     print("=" * 70)
     print("🍱 MUNCH RECAP - PRE-GEN DATASET & PACKAGING TOOL (0 VNĐ)")
     print("=" * 70)
+
+    if args.update_photos:
+        import asyncio
+        from update_all_real_photos import process_all_places
+        print("[*] Đang khởi chạy tính năng lấy ảnh thực tế từ Google Maps...")
+        asyncio.run(process_all_places())
+        return
 
     if args.sync_only:
         sync_frontend_data()
