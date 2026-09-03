@@ -2,18 +2,201 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Munch Recap - Chuyển hướng</title>
-    <!-- Tự động chuyển hướng ngay lập tức vào thư mục frontend -->
-    <meta http-equiv="refresh" content="0; url=./frontend/">
-    <script>
-        window.location.replace("./frontend/");
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Munch Aggregator - Google Maps Food Recap</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome / Tabler Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=2.1">
 </head>
-<body style="background-color: #121418; color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
-    <div style="text-align: center; padding: 20px;">
-        <h2 style="color: #f59e0b; margin-bottom: 8px;">🍱 Đang mở Munch Recap...</h2>
-        <p style="color: #9ca3af; font-size: 0.9rem;">Nếu trang web không tự chuyển, vui lòng bấm vào <a href="./frontend/" style="color: #10b981; text-decoration: none; font-weight: bold;">đây để truy cập</a>.</p>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Overlay mờ khi mở Sidebar Drawer trên điện thoại -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar Navigation & Import Studio -->
+        <aside class="sidebar" id="appSidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>Munch Recap</h2>
+                    <span class="badge-ai" id="appModeBadge">AI-POWERED</span>
+                </div>
+                <button class="btn-close-sidebar" id="btnCloseSidebar" aria-label="Đóng menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-view="randomizer" id="btnRandomizer">
+                    <i class="fa-solid fa-dice"></i>
+                    <span>Hôm Nay Ăn Gì?</span>
+                </a>
+            </nav>
+
+            <div class="import-section">
+                <h3 class="section-title">Nhập Dữ Liệu Quán</h3>
+                
+                <!-- File Dropzone -->
+                <div class="file-dropzone" id="fileDropzone">
+                    <div class="dropzone-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div class="dropzone-text">
+                        <strong id="dropzonePrimaryText">Kéo & thả File vào đây</strong>
+                        <span>Hỗ trợ Notepad++ (.txt) hoặc Excel (.xlsx, .csv)</span>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btnBrowseFile">
+                        <i class="fa-solid fa-folder-open"></i> Chọn File...
+                    </button>
+                    <input type="file" id="fileInputWeb" accept=".txt,.xlsx,.xls,.csv" style="display: none;">
+                </div>
+
+                <!-- Manual Links Input -->
+                <div class="manual-input-box">
+                    <label for="linkTextArea">Dán Link Google Maps (nhiều link):</label>
+                    <textarea id="linkTextArea" placeholder="Dán link Google Maps vào đây (mỗi link 1 dòng)...&#10;https://maps.app.goo.gl/...&#10;https://www.google.com/maps/place/..."></textarea>
+                    
+                    <button class="btn btn-primary btn-full" id="btnAddLinks">
+                        <i class="fa-solid fa-sparkles"></i> Phân Tích & Thêm Quán (AI)
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-outline btn-full" id="btnExportExcel">
+                    <i class="fa-solid fa-file-excel"></i> Xuất File Excel
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header Top Bar -->
+            <header class="top-header">
+                <button class="btn-menu-toggle" id="btnToggleSidebar" aria-label="Mở menu quản lý quán">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm theo tên quán, địa chỉ hoặc món ăn (vd: Phở, Bún chả...)...">
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn btn-outline btn-sm" id="btnReanalyze" title="Cập nhật lại thông tin các quán chưa có tên/địa chỉ rõ ràng">
+                        <i class="fa-solid fa-arrows-rotate"></i> <span class="btn-text">Cập Nhật AI</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm" id="btnClearAll" title="Xóa toàn bộ danh sách">
+                        <i class="fa-solid fa-trash-can"></i> <span class="btn-text">Xóa Tất Cả</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Overview Stats Section -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon emerald">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Tổng Số Quán</span>
+                        <h3 class="stat-value" id="statTotalPlaces">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon amber">
+                        <i class="fa-solid fa-tags"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Danh Mục Loại Hình</span>
+                        <h3 class="stat-value" id="statTotalCategories">0 Types</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fa-solid fa-bowl-food"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Top Món Nổi Bật</span>
+                        <h3 class="stat-value" id="statPopularDishes">AI Selected</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filter & View Controls -->
+            <section class="filter-bar">
+                <div class="category-chips" id="categoryChips">
+                    <button class="chip active" data-category="all">Tất cả</button>
+                </div>
+
+                <div class="view-toggle">
+                    <div class="grid-cols-toggle" id="gridColsToggle">
+                        <button class="density-btn" data-cols="1" title="Lưới 1 Cột Full Width & Cuộn Ảnh Ngang">1 Cột</button>
+                        <button class="density-btn" data-cols="2" title="Lưới 2 Cột Rộng">2 Cột</button>
+                        <button class="density-btn active" data-cols="3" title="Lưới 3 Cột Chuẩn">3 Cột</button>
+                        <button class="density-btn" data-cols="4" title="Lưới 4 Cột Nhỏ Gọn">4 Cột</button>
+                    </div>
+                    <button class="toggle-btn active" id="viewGridBtn" title="Xem dạng Thẻ">
+                        <i class="fa-solid fa-grip"></i>
+                    </button>
+                    <button class="toggle-btn" id="viewTableBtn" title="Xem dạng Bảng">
+                        <i class="fa-solid fa-list-check"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading Spinner Overlay -->
+            <div class="loading-overlay hidden" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p id="loadingText">AI Gemini đang phân tích địa điểm...</p>
+            </div>
+
+            <!-- Food Collection Container (Grid View / Table View) -->
+            <section class="collection-container" id="collectionContainer">
+                <!-- Cards will be dynamically rendered here -->
+            </section>
+        </main>
     </div>
+
+    <!-- Modal "Hôm Nay Ăn Gì" Randomizer -->
+    <div class="modal-backdrop hidden" id="randomizerModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-dice"></i> Gợi Ý Quán Ăn Ngẫu Nhiên</h3>
+                <button class="close-modal" id="btnCloseModal">&times;</button>
+            </div>
+            <div class="modal-body" id="randomizerBody">
+                <div class="random-result-box" id="randomResultBox">
+                    <div class="result-placeholder">
+                        <i class="fa-solid fa-circle-question"></i>
+                        <p>Nhấn nút bên dưới để chọn ngẫu nhiên 1 quán ăn trong danh sách!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-full" id="btnSpinRandom">
+                    <i class="fa-solid fa-rotate"></i> Chọn Quán Ngẫu Nhiên!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- SheetJS CDN cho tính năng Xuất Excel 100% Client-side Web -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="app.js?v=2.1"></script>
 </body>
 </html>

@@ -33,19 +33,23 @@ DATA_PLACES = BASE_DIR / "data" / "places.json"
 FRONTEND_PLACES = BASE_DIR / "frontend" / "places.json"
 
 
+ROOT_PLACES = BASE_DIR / "places.json"
+
+
 def sync_frontend_data():
-    """Đồng bộ data/places.json sang frontend/places.json cho Web Tĩnh"""
+    """Đồng bộ data/places.json sang frontend/places.json và places.json (root) cho Web Tĩnh"""
     if not DATA_PLACES.exists():
         print(f"[Cảnh báo] Không tìm thấy {DATA_PLACES}")
         return False
     
     FRONTEND_PLACES.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(str(DATA_PLACES), str(FRONTEND_PLACES))
+    shutil.copy(str(DATA_PLACES), str(ROOT_PLACES))
     
     with open(DATA_PLACES, "r", encoding="utf-8") as f:
         data = json.load(f)
     
-    print(f"[*] Đã đồng bộ thành công {len(data)} quán ăn sang: {FRONTEND_PLACES}")
+    print(f"[*] Đã đồng bộ thành công {len(data)} quán ăn sang: {FRONTEND_PLACES} & {ROOT_PLACES}")
     return True
 
 
