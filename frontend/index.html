@@ -22,7 +22,7 @@
                 </div>
                 <div class="brand-text">
                     <h2>Munch Recap</h2>
-                    <span class="badge-ai">AI-POWERED</span>
+                    <span class="badge-ai" id="appModeBadge">AI-POWERED</span>
                 </div>
             </div>
 
@@ -52,6 +52,7 @@
                     <button class="btn btn-secondary btn-sm" id="btnBrowseFile">
                         <i class="fa-solid fa-folder-open"></i> Chọn File...
                     </button>
+                    <input type="file" id="fileInputWeb" accept=".txt,.xlsx,.xls,.csv" style="display: none;">
                 </div>
 
                 <!-- Manual Links Input -->
@@ -185,6 +186,8 @@
     <!-- Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- SheetJS CDN cho tính năng Xuất Excel 100% Client-side Web -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

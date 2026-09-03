@@ -49,6 +49,61 @@ window.onInitialDataLoaded = function(places) {
     window.onBackendDataReady(places);
 };
 
+// Runtime Environment helper
+const isPyWebView = () => !!(window.pywebview && window.pywebview.api);
+
+function updateRuntimeModeBadge(mode) {
+    const badge = document.getElementById('appModeBadge');
+    if (!badge) return;
+    if (mode === 'desktop') {
+        badge.textContent = 'DESKTOP APP';
+        badge.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        badge.title = 'Đang chạy qua PyWebView Desktop Backend';
+    } else {
+        badge.textContent = 'STATIC WEB';
+        badge.style.background = 'linear-gradient(90deg, #3b82f6, #8b5cf6)';
+        badge.title = 'Đang chạy chế độ Web Tĩnh (0 VNĐ Server - Pre-baked Data)';
+    }
+}
+
+// Fetch & Load Places from Backend (Desktop Mode)
+async function loadPlaces() {
+    try {
+        if (isPyWebView()) {
+            const places = await window.pywebview.api.get_places();
+            if (places && Array.isArray(places)) {
+                appState.places = places;
+                localStorage.setItem('munch_cached_places', JSON.stringify(places));
+                updateUI();
+            }
+        }
+    } catch (e) {
+        console.error("Lỗi nạp dữ liệu từ Python API:", e);
+    }
+}
+
+// Fetch & Load Places from Static JSON (Static Web Mode)
+async function loadStaticPlaces() {
+    try {
+        const res = await fetch('./places.json');
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                if (appState.places.length === 0 || appState.places.length !== data.length) {
+                    appState.places = data;
+                    localStorage.setItem('munch_cached_places', JSON.stringify(data));
+                    updateUI();
+                    showToast(`Đã nạp ${data.length} quán ăn từ dữ liệu Pre-gen tĩnh!`, "info");
+                }
+            }
+        } else {
+            console.warn("Không tìm thấy file ./places.json tĩnh");
+        }
+    } catch (err) {
+        console.log("Static places fetch:", err);
+    }
+}
+
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
@@ -67,26 +122,128 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("Lỗi đọc cache local:", e);
     }
 
-    // Nạp dữ liệu mới nhất từ Python Backend ngầm
-    if (window.pywebview && window.pywebview.api) {
+    // Nhận diện môi trường Runtime: Desktop hay Static Web
+    if (isPyWebView()) {
+        updateRuntimeModeBadge('desktop');
         loadPlaces();
     } else {
-        window.addEventListener('pywebviewready', loadPlaces);
+        let pywebviewLoaded = false;
+        const handlePyWebView = () => {
+            if (pywebviewLoaded) return;
+            pywebviewLoaded = true;
+            updateRuntimeModeBadge('desktop');
+            loadPlaces();
+        };
+        window.addEventListener('pywebviewready', handlePyWebView);
+
+        // Nếu sau 350ms không có pywebviewready -> Kích hoạt Static Web Mode
+        setTimeout(() => {
+            if (!pywebviewLoaded && !isPyWebView()) {
+                updateRuntimeModeBadge('web');
+                loadStaticPlaces();
+            }
+        }, 350);
     }
 });
 
-// Fetch & Load Places from Backend
-async function loadPlaces() {
+// Client-Side Excel Exporter (SheetJS)
+function exportExcelClientSide() {
+    if (typeof XLSX === 'undefined') {
+        showToast("Thư viện SheetJS chưa được nạp, vui lòng kiểm tra kết nối mạng!", "error");
+        return;
+    }
     try {
-        if (window.pywebview && window.pywebview.api) {
-            const places = await window.pywebview.api.get_places();
-            if (places && Array.isArray(places)) {
-                appState.places = places;
-                updateUI();
-            }
-        }
+        const exportData = appState.places.map((p, idx) => ({
+            "STT": idx + 1,
+            "Tên Quán": p.name || "",
+            "Danh Mục": p.category || "",
+            "Địa Chỉ": p.address || "",
+            "Món Gợi Ý": Array.isArray(p.recommended_dishes) ? p.recommended_dishes.join(", ") : (p.recommended_dishes || ""),
+            "Khoảng Giá": p.price_range || "",
+            "Đánh Giá AI": p.rating_ai || "",
+            "Không Gian & Vibe": p.vibe || "",
+            "Tóm Tắt Đánh Giá": p.summary || "",
+            "Điểm Nổi Bật": Array.isArray(p.highlights) ? p.highlights.join(", ") : (p.highlights || ""),
+            "Link Google Maps": p.original_url || p.expanded_url || ""
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        ws['!cols'] = [
+            { wch: 6 },
+            { wch: 30 },
+            { wch: 18 },
+            { wch: 45 },
+            { wch: 35 },
+            { wch: 20 },
+            { wch: 12 },
+            { wch: 35 },
+            { wch: 50 },
+            { wch: 25 },
+            { wch: 40 }
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Danh Sách Quán Ăn");
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `danh_sach_quan_an_${dateStr}.xlsx`);
+        showToast("Đã xuất file Excel thành công trực tiếp từ trình duyệt!", "success");
     } catch (e) {
-        console.error("Lỗi nạp dữ liệu từ Python API:", e);
+        console.error("Lỗi xuất Excel:", e);
+        showToast(`Lỗi xuất Excel: ${e.message}`, "error");
+    }
+}
+
+// Client-Side File Reader (Web Mode)
+function handleWebUploadedFile(file) {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    
+    if (ext === 'json') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (Array.isArray(data) && data.length > 0) {
+                    appState.places = data;
+                    localStorage.setItem('munch_cached_places', JSON.stringify(data));
+                    updateUI();
+                    showToast(`Đã nhập thành công ${data.length} quán từ file JSON!`, "success");
+                } else {
+                    showToast("File JSON không hợp lệ!", "error");
+                }
+            } catch (err) {
+                showToast(`Lỗi đọc JSON: ${err.message}`, "error");
+            }
+        };
+        reader.readAsText(file);
+    } else if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') {
+        if (typeof XLSX === 'undefined') {
+            showToast("Thư viện SheetJS chưa sẵn sàng!", "error");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet);
+                showToast(`Đã đọc ${rows.length} dòng từ Excel! Để phân tích AI, hãy chạy script pregen_dataset.py.`, "info");
+            } catch (err) {
+                showToast(`Lỗi đọc Excel: ${err.message}`, "error");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } else if (ext === 'txt') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const urls = text.match(/https?:\/\/[^\s]+/g) || [];
+            showToast(`Đã tìm thấy ${urls.length} link Google Maps trong file TXT!`, "info");
+        };
+        reader.readAsText(file);
+    } else {
+        showToast("Định dạng file không được hỗ trợ!", "error");
     }
 }
 
@@ -100,9 +257,9 @@ function setupEventListeners() {
             return;
         }
 
-        showLoading("AI Gemini đang phân tích link quán ăn...");
-        try {
-            if (window.pywebview && window.pywebview.api) {
+        if (isPyWebView()) {
+            showLoading("AI Gemini đang phân tích link quán ăn...");
+            try {
                 const res = await window.pywebview.api.process_text(text);
                 if (res.success) {
                     appState.places = res.places || [];
@@ -111,18 +268,33 @@ function setupEventListeners() {
                 } else {
                     showToast(`Lỗi: ${res.error}`, "error");
                 }
+            } catch (e) {
+                showToast("Có lỗi xảy ra khi phân tích link!", "error");
+            } finally {
+                hideLoading();
+                updateUI();
             }
-        } catch (e) {
-            showToast("Có lỗi xảy ra khi phân tích link!", "error");
-        } finally {
-            hideLoading();
-            updateUI();
+        } else {
+            // Chế độ Web Tĩnh
+            showToast("💡 Chế độ Web Tĩnh (0 VNĐ Server): Hãy chạy 'python pregen_dataset.py' trên máy để AI xử lý và cập nhật lên web!", "info");
         }
     });
 
+    // Hidden Web File Input
+    const fileInputWeb = document.getElementById('fileInputWeb');
+    if (fileInputWeb) {
+        fileInputWeb.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                handleWebUploadedFile(files[0]);
+                fileInputWeb.value = "";
+            }
+        });
+    }
+
     // File Browse Dialog
     btnBrowseFile.addEventListener('click', async () => {
-        if (window.pywebview && window.pywebview.api) {
+        if (isPyWebView()) {
             showLoading("Đang đọc file và gọi AI Gemini...");
             try {
                 const res = await window.pywebview.api.open_file_dialog();
@@ -138,6 +310,9 @@ function setupEventListeners() {
                 hideLoading();
                 updateUI();
             }
+        } else {
+            // Web Mode: Kích hoạt file picker của trình duyệt
+            if (fileInputWeb) fileInputWeb.click();
         }
     });
 
@@ -158,17 +333,22 @@ function setupEventListeners() {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             const file = files[0];
-            showToast(`Đã nhận file: ${file.name}. Đang xử lý...`, "success");
-            // Gọi qua open_file_dialog hoặc truyền path nếu native pywebview hỗ trợ
-            if (file.path && window.pywebview && window.pywebview.api) {
+            if (isPyWebView() && file.path) {
                 showLoading("AI đang đọc dữ liệu từ file...");
-                const res = await window.pywebview.api.process_file(file.path);
-                hideLoading();
-                if (res.success) {
-                    appState.places = res.places || [];
-                    updateUI();
-                    showToast(`Nhập dữ liệu thành công (${res.count} quán mới)!`, "success");
+                try {
+                    const res = await window.pywebview.api.process_file(file.path);
+                    if (res.success) {
+                        appState.places = res.places || [];
+                        updateUI();
+                        showToast(`Nhập dữ liệu thành công (${res.count} quán mới)!`, "success");
+                    }
+                } catch (err) {
+                    showToast("Lỗi xử lý file!", "error");
+                } finally {
+                    hideLoading();
                 }
+            } else {
+                handleWebUploadedFile(file);
             }
         }
     });
@@ -180,26 +360,33 @@ function setupEventListeners() {
             return;
         }
 
-        if (window.pywebview && window.pywebview.api) {
+        if (isPyWebView()) {
             const res = await window.pywebview.api.export_excel_dialog();
             if (res.success) {
                 showToast("Xuất Excel thành công!", "success");
             } else if (res.error) {
                 showToast(`Lỗi xuất file: ${res.error}`, "error");
             }
+        } else {
+            exportExcelClientSide();
         }
     });
 
     // Clear All
     btnClearAll.addEventListener('click', async () => {
-        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách quán ăn không?")) {
-            if (window.pywebview && window.pywebview.api) {
+        if (confirm("Bạn có chắc chắn muốn xóa danh sách quán ăn đang hiển thị không?")) {
+            if (isPyWebView()) {
                 const res = await window.pywebview.api.clear_all();
                 if (res.success) {
                     appState.places = [];
                     updateUI();
                     showToast("Đã xóa sạch danh sách quán ăn!", "success");
                 }
+            } else {
+                appState.places = [];
+                localStorage.removeItem('munch_cached_places');
+                updateUI();
+                showToast("Đã xóa danh sách hiển thị! Bạn có thể tải lại trang để nạp lại dữ liệu gốc.", "info");
             }
         }
     });
@@ -257,7 +444,7 @@ function setupEventListeners() {
     const btnReanalyze = document.getElementById('btnReanalyze');
     if (btnReanalyze) {
         btnReanalyze.addEventListener('click', async () => {
-            if (window.pywebview && window.pywebview.api) {
+            if (isPyWebView()) {
                 showLoading("AI đang cập nhật lại thông tin các quán chưa rõ...");
                 try {
                     const res = await window.pywebview.api.reanalyze_fallbacks();
@@ -271,6 +458,8 @@ function setupEventListeners() {
                 } finally {
                     hideLoading();
                 }
+            } else {
+                showToast("💡 Chế độ Web Tĩnh: Hãy chạy 'python reprocess_fallback.py' hoặc 'python pregen_dataset.py' trên máy local để cập nhật dữ liệu!", "info");
             }
         });
     }
