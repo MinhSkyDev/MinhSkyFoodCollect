@@ -101,15 +101,17 @@ async function loadPlaces() {
 // Fetch & Load Places from Static JSON (Static Web Mode)
 async function loadStaticPlaces() {
     try {
-        const res = await fetch('./places.json');
+        // Luôn nạp với timestamp để tránh browser cache file cũ
+        const res = await fetch('./places.json?t=' + Date.now(), { cache: 'no-cache' });
         if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
-                if (appState.places.length === 0 || appState.places.length !== data.length) {
+                const isChanged = JSON.stringify(appState.places) !== JSON.stringify(data);
+                if (isChanged || appState.places.length === 0) {
                     appState.places = data;
                     localStorage.setItem('munch_cached_places', JSON.stringify(data));
                     updateUI();
-                    showToast(`Đã nạp ${data.length} quán ăn từ dữ liệu Pre-gen tĩnh!`, "info");
+                    showToast(`Đã đồng bộ ${data.length} quán ăn với ảnh Google Maps thực tế!`, "success");
                 }
             }
         } else {
@@ -124,14 +126,19 @@ async function loadStaticPlaces() {
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     
-    // 0ms INSTANT RENDER: Nạp ngay từ localStorage đệm nếu có
+    // 0ms INSTANT RENDER: Tự động xóa cache cũ nếu phát hiện còn chứa ảnh mẫu Unsplash
     try {
         const cached = localStorage.getItem('munch_cached_places');
         if (cached) {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                appState.places = parsed;
-                updateUI();
+            if (cached.includes('images.unsplash.com')) {
+                console.log("[Cache Invalidation] Phát hiện cache cũ chứa Unsplash, tự động dọn sạch cache!");
+                localStorage.removeItem('munch_cached_places');
+            } else {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    appState.places = parsed;
+                    updateUI();
+                }
             }
         }
     } catch (e) {
