@@ -33,6 +33,22 @@ const randomResultBox = document.getElementById('randomResultBox');
 const viewGridBtn = document.getElementById('viewGridBtn');
 const viewTableBtn = document.getElementById('viewTableBtn');
 
+// Mobile Sidebar Drawer Elements
+const appSidebar = document.getElementById('appSidebar');
+const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+const btnCloseSidebar = document.getElementById('btnCloseSidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+function openMobileSidebar() {
+    if (appSidebar) appSidebar.classList.add('open');
+    if (sidebarOverlay) sidebarOverlay.classList.add('active');
+}
+
+function closeMobileSidebar() {
+    if (appSidebar) appSidebar.classList.remove('open');
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+}
+
 // Callback nạp ngầm dữ liệu từ Python Backend (Async Push)
 window.onBackendDataReady = function(places) {
     if (Array.isArray(places) && places.length > 0) {
@@ -249,6 +265,32 @@ function handleWebUploadedFile(file) {
 
 // Event Listeners
 function setupEventListeners() {
+    // Mobile Sidebar Drawer Events
+    if (btnToggleSidebar) {
+        btnToggleSidebar.addEventListener('click', openMobileSidebar);
+    }
+    if (btnCloseSidebar) {
+        btnCloseSidebar.addEventListener('click', closeMobileSidebar);
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeMobileSidebar);
+    }
+
+    // Đóng Sidebar trên điện thoại khi click vào các nav-item hoặc phím Escape
+    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                closeMobileSidebar();
+            }
+        });
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeMobileSidebar();
+        }
+    });
+
     // Dán Link Manual
     btnAddLinks.addEventListener('click', async () => {
         const text = linkTextArea.value.trim();

@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Munch Aggregator - Google Maps Food Recap</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,8 +14,11 @@
 </head>
 <body class="dark-theme">
     <div class="app-container">
+        <!-- Overlay mờ khi mở Sidebar Drawer trên điện thoại -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- Sidebar Navigation & Import Studio -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="appSidebar">
             <div class="brand">
                 <div class="brand-icon">
                     <i class="fa-solid fa-utensils"></i>
@@ -24,6 +27,9 @@
                     <h2>Munch Recap</h2>
                     <span class="badge-ai" id="appModeBadge">AI-POWERED</span>
                 </div>
+                <button class="btn-close-sidebar" id="btnCloseSidebar" aria-label="Đóng menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
             <nav class="nav-menu">
@@ -77,6 +83,9 @@
         <main class="main-content">
             <!-- Header Top Bar -->
             <header class="top-header">
+                <button class="btn-menu-toggle" id="btnToggleSidebar" aria-label="Mở menu quản lý quán">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input type="text" id="searchInput" placeholder="Tìm theo tên quán, địa chỉ hoặc món ăn (vd: Phở, Bún chả...)...">
@@ -84,10 +93,10 @@
 
                 <div class="header-actions">
                     <button class="btn btn-outline btn-sm" id="btnReanalyze" title="Cập nhật lại thông tin các quán chưa có tên/địa chỉ rõ ràng">
-                        <i class="fa-solid fa-arrows-rotate"></i> Cập Nhật AI
+                        <i class="fa-solid fa-arrows-rotate"></i> <span class="btn-text">Cập Nhật AI</span>
                     </button>
                     <button class="btn btn-danger btn-sm" id="btnClearAll" title="Xóa toàn bộ danh sách">
-                        <i class="fa-solid fa-trash-can"></i> Xóa Tất Cả
+                        <i class="fa-solid fa-trash-can"></i> <span class="btn-text">Xóa Tất Cả</span>
                     </button>
                 </div>
             </header>

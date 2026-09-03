@@ -120,6 +120,63 @@ body {
     gap: 12px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.btn-close-sidebar {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    margin-left: auto;
+    transition: all 0.2s ease;
+}
+
+.btn-close-sidebar:hover {
+    color: var(--accent-danger);
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+.btn-menu-toggle {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 1.1rem;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.btn-menu-toggle:hover {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 140;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
 }
 
 .brand-icon {
@@ -892,4 +949,256 @@ body {
 @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   Mobile Responsive System (iPhone XS to iPhone 17 & Touch Devices)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* 1. Reset Body & App Container cho Mobile */
+    body {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .app-container {
+        height: 100vh;
+        height: 100dvh;
+        width: 100vw;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 2. Hiển thị nút Hamburger và nút đóng Sidebar */
+    .btn-menu-toggle {
+        display: flex;
+    }
+
+    .btn-close-sidebar {
+        display: flex;
+    }
+
+    /* 3. Chuyển Sidebar thành Off-Canvas Drawer */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 86vw;
+        max-width: 320px;
+        height: 100vh;
+        height: 100dvh;
+        z-index: 150;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 6px 0 28px rgba(0, 0, 0, 0.7);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: max(16px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom)) 18px;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* 4. Main Content chiếm 100% diện tích */
+    .main-content {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    /* 5. Top Header co giãn trên Mobile */
+    .top-header {
+        height: auto;
+        min-height: 56px;
+        padding: max(8px, env(safe-area-inset-top)) 12px 8px 12px;
+        gap: 8px;
+    }
+
+    .search-bar {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-bar input {
+        padding: 8px 12px 8px 34px;
+        font-size: 0.8rem;
+    }
+
+    .search-icon {
+        left: 10px;
+        font-size: 0.85rem;
+    }
+
+    .header-actions {
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .header-actions .btn-sm {
+        padding: 7px 10px;
+        font-size: 0.75rem;
+    }
+
+    /* 6. Thẻ Thống Kê (Stats Row) dạng Swipeable ngang */
+    .stats-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 8px 12px 4px 12px;
+        gap: 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .stats-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .stat-card {
+        flex: 0 0 auto;
+        min-width: 120px;
+        padding: 8px 12px;
+        gap: 10px;
+        scroll-snap-align: start;
+        border-radius: var(--radius-sm);
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+        border-radius: var(--radius-sm);
+    }
+
+    .stat-info h4 {
+        font-size: 1rem;
+    }
+
+    .stat-info p {
+        font-size: 0.68rem;
+    }
+
+    /* 7. Toolbar & Bộ lọc danh mục */
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 6px 12px;
+    }
+
+    .toolbar-left {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .toolbar-left::-webkit-scrollbar {
+        display: none;
+    }
+
+    .category-chips {
+        padding-bottom: 2px;
+    }
+
+    .chip {
+        padding: 5px 12px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .toolbar-right {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    /* Ẩn các nút mật độ 3 và 4 cột trên điện thoại */
+    .density-btn[data-cols="3"],
+    .density-btn[data-cols="4"] {
+        display: none;
+    }
+
+    /* 8. Food Collection Container */
+    .collection-container {
+        padding: 8px 12px max(24px, env(safe-area-inset-bottom)) 12px;
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 9. Card Food & Photo Gallery trên điện thoại */
+    .food-card {
+        border-radius: var(--radius-md);
+    }
+
+    .card-banner {
+        height: 170px;
+    }
+
+    .card-body {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .card-photo-gallery {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .card-photo-item {
+        flex: 0 0 200px;
+        height: 140px;
+    }
+
+    /* 10. Modals & Toasts trên Mobile */
+    .modal-card {
+        width: calc(100vw - 32px);
+        max-width: 390px;
+        padding: 16px;
+        margin: 0 16px;
+    }
+
+    .toast-container {
+        bottom: max(16px, env(safe-area-inset-bottom));
+        right: 16px;
+        left: 16px;
+    }
+
+    .toast {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.8rem;
+        padding: 10px 14px;
+    }
+}
+
+/* Tối ưu đặc biệt cho màn hình nhỏ (iPhone XS / mini: <= 480px) */
+@media (max-width: 480px) {
+    .header-actions .btn-sm .btn-text {
+        display: none;
+    }
+
+    .header-actions .btn-sm {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+    }
+
+    .search-bar input {
+        font-size: 0.78rem;
+    }
+
+    .brand-text h2 {
+        font-size: 1.1rem;
+    }
 }
