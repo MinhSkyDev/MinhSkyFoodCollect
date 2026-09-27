@@ -1233,5 +1233,45 @@
       "https://lh3.googleusercontent.com/gps-cs-s/AHRPTWmDysD-bjRTD10Nn3MdS-N-IzpcIOH7355emuRzBuMVn0WDTA27sOMsvh99bcnd0aROQ0Ibbl0ytscT2YtnJy2uOvj3MHhw6uDpMh6be_pIffGFqG8AkmXejCw4ubIC5sNypCc=w800-h600-k-no",
       "https://lh3.googleusercontent.com/gps-cs-s/AHRPTWmYy_XB2mmyfbLI3l3CjNZpNG2XmMgrFox7CkEcDSKlAlGEK19NkIgjadpbmoTY61082QqWyRLTWZtI1izzyZAMq-VckkxdYVYuOLGGlFQ6PRu5uqCeUF9lba3zhPFZcNUMV_qmG6N7TRY3=w800-h600-k-no"
     ]
+  },
+  {
+    "name": "Oh! Chicken",
+    "address": "22 Song Hành, Phường An Phú, Quận 2, Thành phố Hồ Chí Minh",
+    "category": "Gà rán Hàn Quốc",
+    "recommended_dishes": [
+      "Gà rán sốt gia vị Hàn Quốc",
+      "Gà chiên xù giòn",
+      "Lẩu quân đội"
+    ],
+    "price_range": "150.000đ - 300.000đ",
+    "vibe": "Có máy lạnh, Không gian hiện đại, Ấm cúng, Phù hợp tụ tập bạn bè",
+    "summary": "Nhà hàng chuyên gà rán chuẩn vị Hàn Quốc với lớp da giòn rụm và nước sốt đậm đà đặc trưng tại khu vực An Phú. Thực khách yêu thích không gian thoải mái cùng sự phục vụ chu đáo, là địa điểm lý tưởng để thưởng thức gà và bia lạnh.",
+    "rating_ai": 4.3,
+    "review_count": "185 đánh giá",
+    "highlights": [
+      "Chuẩn Vị Hàn",
+      "Gà Siêu Giòn",
+      "Phục Vụ Tốt"
+    ],
+    "top_comments": [
+      {
+        "author": "Minh Tuấn",
+        "rating": 5,
+        "comment": "Gà rán ở đây siêu ngon, vỏ giòn tan và sốt ngập vị, không bị quá béo. Chủ quán người Hàn cực kỳ thân thiện và chu đáo."
+      },
+      {
+        "author": "Thanh Thảo",
+        "rating": 4,
+        "comment": "Không gian ấm cúng, gà lên món nhanh và nóng hổi. Rất thích hợp để đi nhóm đông người làm vài ly bia."
+      }
+    ],
+    "original_url": "https://maps.app.goo.gl/r7sb657NX45QH6SM7",
+    "expanded_url": "https://www.google.com/maps/place/Oh!+Chicken/@10.8054511,106.7468371,17z/data=!4m6!3m5!1s0x317527e37c784459:0xc7ad555ba693d8e0!8m2!3d10.8054511!4d106.7468371!16s/g/11j6yzq6y4!18m1!1e1?entry=tts&g_ep=EgoyMDI2MDkyMy4wIPu8ASoASAFQAw==&skid=00de0ecc-9fd6-435b-99a0-2a4450af15b3",
+    "image_url": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80",
+    "photo_gallery": [
+      "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80"
+    ],
+    "id": "3e160620-4ccc-4199-84a7-65b631a2b8cc",
+    "created_at": "2026-09-27T21:45:49.910948"
   }
 ]
