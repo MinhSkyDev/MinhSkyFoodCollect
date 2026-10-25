@@ -626,7 +626,7 @@ function renderGridView(places) {
         const galleryList = Array.isArray(p.photo_gallery) && p.photo_gallery.length > 0 ? p.photo_gallery : [imgUrl];
         if (isCols1) {
             const itemsHtml = galleryList.map((src, i) => `
-                <img src="${src}" alt="${escapeHtml(p.name)} Photo ${i+1}" class="card-photo-item" loading="lazy" decoding="async" onerror="this.src='${defaultImg}'" />
+                <img src="${src}" alt="${escapeHtml(p.name)} Photo ${i+1}" class="card-photo-item" loading="lazy" decoding="async" onerror="this.onerror=null; this.remove();" />
             `).join('');
             photoGalleryHtml = `<div class="card-photo-gallery">${itemsHtml}</div>`;
         }
