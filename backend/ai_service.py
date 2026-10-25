@@ -36,7 +36,7 @@ class GeminiAIService:
     """
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or Config.GEMINI_API_KEY
-        self.model_name = "gemini-3.6-flash"
+        self.model_name = "gemini-3.8-flash"
 
         if not self.api_key:
             print("[Warning GeminiAIService]: Chưa cấu hình GEMINI_API_KEY trong file .env!")
@@ -94,7 +94,7 @@ class GeminiAIService:
         """
 
         # Các mô hình Gemini chuẩn hiện đang hoạt động 100%
-        models_to_try = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest"]
+        models_to_try = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-flash-latest"]
 
         for model_name in models_to_try:
             try:

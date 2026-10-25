@@ -1273,5 +1273,48 @@
     ],
     "id": "3e160620-4ccc-4199-84a7-65b631a2b8cc",
     "created_at": "2026-09-27T21:45:49.910948"
+  },
+  {
+    "name": "Góc nhỏ An yên : Moon & Ember",
+    "address": "Đường 38, Phường An Phú, Thành phố Thủ Đức, TP. Hồ Chí Minh",
+    "category": "Cà phê & Quán Chill",
+    "recommended_dishes": [
+      "Cà phê Muối",
+      "Trà Trái Cây Nhiệt Đới",
+      "Cocktail & Mocktail Chill"
+    ],
+    "price_range": "35.000đ - 85.000đ",
+    "vibe": "Sân vườn mộc mạc, Yên tĩnh, Ấm cúng, Phong cách mộc mạc chill, Thích hợp hẹn hò & làm việc",
+    "summary": "Quán sở hữu không gian an yên ngập tràn cây xanh và ánh đèn ấm áp đúng như tên gọi, là tọa độ 'đi trốn' lý tưởng giữa lòng Sài Gòn. Thực khách đánh giá cao không khí riêng tư, nhạc chill nhẹ nhàng cùng đồ uống pha chế vừa miệng.",
+    "rating_ai": 4.8,
+    "review_count": "185 đánh giá",
+    "highlights": [
+      "Yên Tĩnh",
+      "Không Gian Đẹp",
+      "Chill Đêm"
+    ],
+    "top_comments": [
+      {
+        "author": "Lê Hoàng Nam",
+        "rating": 5,
+        "comment": "Quán rất an yên đúng như tên gọi. Không gian riêng tư, nhiều góc xanh mát, nhạc chill và nước uống pha rất hợp vị."
+      },
+      {
+        "author": "Trần Thanh Thảo",
+        "rating": 5,
+        "comment": "Địa điểm tuyệt vời để né tránh xô bồ thành phố. Nhân viên thân thiện, đồ uống ngon, buổi tối lên đèn nhìn cực kỳ ấm cúng và lãng mạn."
+      }
+    ],
+    "original_url": "https://maps.app.goo.gl/251Sdv62B425b4rJ8",
+    "expanded_url": "https://www.google.com/maps/place/Góc+nhỏ+An+yên+:+Moon+&+Ember/@10.8112262,106.7350613,21z/data=!4m6!3m5!1s0x317527007694d89d:0x1bcb541134c4cc6f!8m2!3d10.811241!4d106.7350336!16s/g/11yq9yxxz7?entry=tts&g_ep=EgoyMDI2MTAyMC4wIPu8ASoASAFQAw==&skid=5e2092d7-ca0d-4b16-82eb-4aa48f2e59e5",
+    "image_url": "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Rv_Lpc5MpughTb8qoT8FETNuv7KuTvYyDl9gkeuwh8nJ37e61O_o2AlweMoUejPDaljg91g6ndxMOGZz2-kf3V893DTbnzx0ky3nYqcPZI9Una7CH4fMqmWr5wqiSEwVdVX3dqi3b3dq4Q=w800-h600-k-no",
+    "photo_gallery": [
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Rv_Lpc5MpughTb8qoT8FETNuv7KuTvYyDl9gkeuwh8nJ37e61O_o2AlweMoUejPDaljg91g6ndxMOGZz2-kf3V893DTbnzx0ky3nYqcPZI9Una7CH4fMqmWr5wqiSEwVdVX3dqi3b3dq4Q=w800-h600-k-no",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9Swua31cCzYq4euHfHNrvuuWLZcw3Hhf__4bo3M9k-wZVZYQvG6tbJeY-bf3voRorg0BN_DsbKlZNG23pFmmDtWW-fVm0Ngy0fvl4O6JKcBdvfFig7p4TjKEihTPRSjlbVdoCoahLpCHOCf=w800-h600-k-no",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9SRpMf84SUjxFg5fmDpe-tP1hBPw7EgNxVVhTuFg3XmT4yHWqAhayePdszmlRcuGoTkWJh8pkKDMKt6DsreUgFLw48E2scTqj1pbagthzpwX1RrbMsi8omrwc3E3DryMlAzB1KwbayHLvFy=w800-h600-k-no",
+      "https://lh3.googleusercontent.com/gps-cs-s/ANWiy9S0hFq37hOi7h13R4FXZLvVDxaCenIs3pnCCccRUpB5yeXPREV3p7rC2__netPmAbsGwRYfoDWhoU7vejn7V4r7EtXTMNOXvnd37_H82NjKVQNXsXbgIlQmMr1RAtpD9rqg9z5zKMJtWRjf=w800-h600-k-no"
+    ],
+    "id": "533dab84-855b-448f-9f5f-9e005f863b89",
+    "created_at": "2026-10-25T22:25:49.778100"
   }
 ]
